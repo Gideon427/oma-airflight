@@ -10,24 +10,18 @@ export default function TrackingResult() {
   const [error, setError] = useState('')
 
   useEffect(() => {
-    const fetchShipment = async () => {
-      try {
-        const res = await fetch(`/api/shipments/track/${trackingNumber}`)
-        const data = await res.json()
-        
-        if (!res.ok) {
-          throw new Error(data.error || 'Failed to fetch shipment')
-        }
-        
-        setShipment(data.shipment)
-      } catch (err) {
-        setError(err.message)
-      } finally {
-        setLoading(false)
-      }
+    const stored = typeof window !== 'undefined' ? window.localStorage.getItem('shipments') : null;
+    const shipments = stored ? JSON.parse(stored) : [];
+    const found = shipments.find((item) => item.trackingNumber === trackingNumber);
+
+    if (!found) {
+      setError('Tracking number not found.');
+      setLoading(false);
+      return;
     }
-    
-    fetchShipment()
+
+    setShipment(found);
+    setLoading(false);
   }, [trackingNumber])
 
   const getStatusIcon = (status) => {
@@ -52,6 +46,10 @@ export default function TrackingResult() {
           <div className="status-badge">
             {getStatusIcon(shipment.status)}
             <span>{shipment.status}</span>
+          </div>
+          <div className="current-location">
+            <FaMapMarkerAlt className="icon" />
+            <span>Current Location: {shipment.currentLocation || 'Unknown'}</span>
           </div>
         </div>
         
@@ -79,19 +77,29 @@ export default function TrackingResult() {
           
           <div className="timeline">
             <h2>Shipment Progress</h2>
-            {shipment.history.map((event, index) => (
-              <div key={index} className="timeline-event">
-                <div className="timeline-dot"></div>
-                <div className="timeline-content">
-                  <div className="timeline-header">
-                    <h3>{event.status}</h3>
-                    <span>{new Date(event.date).toLocaleString()}</span>
+            {(() => {
+              // Group events by status and keep only the latest for each status
+              const statusGroups = {}
+              shipment.history.forEach((event) => {
+                if (!statusGroups[event.status] || new Date(event.date) > new Date(statusGroups[event.status].date)) {
+                  statusGroups[event.status] = event
+                }
+              })
+              
+              return Object.values(statusGroups).map((event, index) => (
+                <div key={index} className="timeline-event">
+                  <div className="timeline-dot"></div>
+                  <div className="timeline-content">
+                    <div className="timeline-header">
+                      <h3>{event.status}</h3>
+                      <span>{new Date(event.date).toLocaleString()}</span>
+                    </div>
+                    <p><FaMapMarkerAlt /> {event.location}</p>
+                    <p>{event.description}</p>
                   </div>
-                  <p><FaMapMarkerAlt /> {event.location}</p>
-                  <p>{event.description}</p>
                 </div>
-              </div>
-            ))}
+              ))
+            })()}
           </div>
         </div>
         

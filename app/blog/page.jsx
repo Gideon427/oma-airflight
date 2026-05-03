@@ -5,47 +5,61 @@ export default function BlogPage() {
     {
       id: 1,
       title: "10 Tips for Safe Package Shipping",
-      excerpt: "Learn how to properly package your items to ensure they arrive safely at their destination.",
+      excerpt: "Learn how to properly package your items to ensure they arrive safely at their destination. Discover the best practices for choosing materials, securing boxes, and preparing for transit.",
       date: "May 15, 2023",
       image: "/blog1.jpg",
-      slug: "10-tips-for-safe-package-shipping"
+      slug: "10-tips-for-safe-package-shipping",
+      author: "Jane Smith"
     },
     {
       id: 2,
-      title: "Understanding Shipping Costs",
-      excerpt: "A comprehensive guide to how shipping costs are calculated and how you can save money.",
+      title: "Complete Guide to International Shipping",
+      excerpt: "Master the complexities of international shipping including documentation, customs, duties, and best practices for global shipments.",
       date: "June 2, 2023",
       image: "/blog2.jpg",
-      slug: "understanding-shipping-costs"
+      slug: "international-shipping-guide",
+      author: "John Wilson"
     },
     {
       id: 3,
-      title: "International Shipping Made Easy",
-      excerpt: "Everything you need to know about shipping packages internationally without hassle.",
-      date: "June 18, 2023",
+      title: "Eco-Friendly Shipping Solutions",
+      excerpt: "Discover sustainable packaging materials and carbon-neutral shipping options that reduce your environmental impact while saving money.",
+      date: "June 20, 2023",
       image: "/blog3.jpg",
-      slug: "international-shipping-made-easy"
+      slug: "eco-friendly-shipping-solutions",
+      author: "Sarah Green"
     },
     {
       id: 4,
-      title: "Tracking Your Packages: A Complete Guide",
-      excerpt: "How to effectively use our tracking system to monitor your shipments in real-time.",
-      date: "July 5, 2023",
+      title: "The Importance of Tracking and Transparency in Shipping",
+      excerpt: "Explore how real-time tracking builds customer trust, reduces disputes, and provides valuable insights into your shipping operations.",
+      date: "July 10, 2023",
       image: "/blog4.jpg",
-      slug: "tracking-your-packages-guide"
+      slug: "tracking-and-transparency",
+      author: "Mike Johnson"
     },
     {
       id: 5,
-      title: "Eco-Friendly Shipping Options",
-      excerpt: "Discover our green shipping initiatives and how you can reduce your carbon footprint.",
-      date: "July 22, 2023",
+      title: "Managing Seasonal Shipping Challenges",
+      excerpt: "Prepare for holiday rushes, weather delays, and capacity issues with practical strategies for maintaining service quality year-round.",
+      date: "August 5, 2023",
       image: "/blog5.jpg",
-      slug: "eco-friendly-shipping-options"
+      slug: "seasonal-shipping-challenges",
+      author: "Emma Davis"
+    },
+    {
+      id: 6,
+      title: "Choosing the Right Shipping Method for Your Business",
+      excerpt: "Compare shipping carriers and methods to find the best balance between cost, speed, and reliability for your business needs.",
+      date: "August 25, 2023",
+      image: "/blog6.jpg",
+      slug: "choosing-right-shipping-method",
+      author: "David Martinez"
     }
   ];
 
   return (
-    <div className="section">
+    <section className="section">
       <div className="container">
         <div className="section-title">
           <h1>Our Blog</h1>
@@ -60,12 +74,15 @@ export default function BlogPage() {
                 <p className="blog-date">{post.date}</p>
                 <h2 className="blog-title">{post.title}</h2>
                 <p className="blog-excerpt">{post.excerpt}</p>
-                <Link href={`/blog/${post.slug}`} className="blog-read-more">Read More →</Link>
+                <div className="blog-footer">
+                  <span className="blog-author">By {post.author}</span>
+                  <Link href={`/blog/${post.slug}`} className="blog-read-more">Read More →</Link>
+                </div>
               </div>
             </article>
           ))}
         </div>
       </div>
-    </div>
+    </section>
   );
 }

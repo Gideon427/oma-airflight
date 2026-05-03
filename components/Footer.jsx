@@ -29,7 +29,7 @@ export default function Footer() {
               <a href="#" className="social-link" aria-label="Instagram"><FaInstagram /></a>
               <a href="#" className="social-link" aria-label="LinkedIn"><FaLinkedin /></a>
               <a
-                href="https://wa.me/16614197124"
+                href="https://wa.me/16503020768"
                 className="social-link"
                 aria-label="WhatsApp"
                 target="_blank"
@@ -45,9 +45,11 @@ export default function Footer() {
             <h3 className="footer-title">Quick Links</h3>
             <ul className="footer-links">
               <li><a href="/">Home</a></li>
-              <li><a href="/about">About Us</a></li>
+              <li><a href="/services">Services</a></li>
+              <li><a href="/pricing">Pricing</a></li>
+              <li><a href="/locations">Locations</a></li>
+              <li><a href="/careers">Careers</a></li>
               <li><a href="/blog">Blog</a></li>
-              <li><a href="/contact">Contact</a></li>
             </ul>
           </div>
 
@@ -58,6 +60,8 @@ export default function Footer() {
               <li><a href="/track">Track Package</a></li>
               <li><a href="/send">Send Package</a></li>
               <li><a href="/quote">Get a Quote</a></li>
+              <li><a href="/support">Support</a></li>
+              <li><a href="/faq">FAQ</a></li>
             </ul>
           </div>
 
@@ -68,10 +72,10 @@ export default function Footer() {
               <p>123 Shipping Avenue</p>
               <p>New York, NY 10001</p>
               <p>Email: <a href="mailto:Omahaairflighteasecargo@gmail.com">Omahaairflighteasecargo@gmail.com</a></p>
-              <p>Phone: <a href="tel:+16614197124">+1 (402) 318-3533📞</a></p>
-              <p>Whatsapp: <a href="https://wa.me/16614197124" 
+              <p>Phone: <a href="tel:+16503020768">Phone:+1 (650) 302-0768 📞</a></p>
+              <p>Whatsapp: <a href="https://wa.me/16503020768" 
               className='social link'
-              target="_blank" rel="noopener noreferrer">+1 (661) 419-7124 📞</a></p>
+              target="_blank" rel="noopener noreferrer">WhatsApp: +1 (650) 302-0768 📞</a></p>
             </address>
           </div>
         </div>
@@ -159,7 +163,7 @@ export default function Footer() {
         }
 
         .footer-links a {
-          color: var(--gray-300);
+          color: var(--white);
           transition: color 0.2s ease;
         }
 

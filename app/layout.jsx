@@ -1,8 +1,8 @@
 import '../css/globals.css'
 import Navbar from '@/components/Navbar'
 import Footer from '@/components/Footer'
-import { AuthProvider } from '@/components/AuthProvider'
-import Blog from '@/components/Blog'
+import WhatsAppButton from '@/components/WhatsAppButton'
+//import Blog from '@/components/Blog'
 
 export const metadata = {
   title: 'SwiftShip - Fast & Reliable Shipping',
@@ -56,17 +56,10 @@ export default function RootLayout({ children }) {
   return (
     <html lang="en">
       <body>
-        {/* AuthProvider provides authentication context to all components */}
-        <AuthProvider>
-          {/* Navbar with dynamic login/logout links */}
-          <Navbar />
-          {/* Main content area for page-specific content */}
-          <main>{children}</main>
-          {/* Blog section displayed on every page */}
-          <Blog posts={blogPosts} />
-          {/* Footer for additional links and info */}
-          <Footer />
-        </AuthProvider>
+        <Navbar />
+        <main>{children}</main>
+        <WhatsAppButton />
+        <Footer />
       </body>
     </html>
   )

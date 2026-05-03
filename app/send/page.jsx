@@ -1,19 +1,20 @@
 'use client';
-import { useState, useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { useAuth } from '@/components/AuthProvider';
+import Link from 'next/link';
 
 export default function SendPackage() {
-  const { user, loading } = useAuth();
   const router = useRouter();
+  const [role, setRole] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState('');
+  const [trackingCode, setTrackingCode] = useState('');
 
   const [formData, setFormData] = useState({
     sender: {
-      name: user?.name || '',
+      name: '',
       address: '',
-      email: user?.email || '',
+      email: '',
       phone: '',
     },
     receiver: {
@@ -29,49 +30,6 @@ export default function SendPackage() {
       value: '',
     },
   });
-
-  useEffect(() => {
-    if (!loading && !user) {
-      const token = localStorage.getItem('token');
-      if (!token) {
-        console.log('No token, redirecting to login');
-        setError('Please log in to send a package');
-        router.push('/login');
-        return;
-      }
-      fetch('/api/auth/me', {
-        headers: { Authorization: `Bearer ${token}` },
-      })
-        .then((res) => res.json())
-        .then((data) => {
-          if (!data.success) {
-            console.error('Invalid token, redirecting to login:', data.error);
-            localStorage.removeItem('token');
-            setError('Session expired. Please log in again.');
-            router.push('/login');
-          }
-        })
-        .catch((err) => {
-          console.error('Error validating token:', err);
-          localStorage.removeItem('token');
-          setError('Session error. Please log in again.');
-          router.push('/login');
-        });
-    }
-  }, [user, loading, router]);
-
-  useEffect(() => {
-    if (user) {
-      setFormData((prev) => ({
-        ...prev,
-        sender: {
-          ...prev.sender,
-          name: user.name || prev.sender.name,
-          email: user.email || prev.sender.email,
-        },
-      }));
-    }
-  }, [user]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -116,45 +74,66 @@ export default function SendPackage() {
     });
   };
 
-  const handleSubmit = async (e) => {
+  const generateTrackingNumber = () => {
+    const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+    let code = '';
+    for (let i = 0; i < 10; i += 1) {
+      code += chars.charAt(Math.floor(Math.random() * chars.length));
+    }
+    return code;
+  };
+
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      setRole(window.localStorage.getItem('role') || '');
+    }
+  }, []);
+
+  const handleSubmit = (e) => {
     e.preventDefault();
+    const isAuthorized = role === 'admin' || role === 'worker';
+
+    if (!isAuthorized) {
+      setError('Only a worker or admin may send a package. Please login on the admin page.');
+      return;
+    }
+
     setIsSubmitting(true);
     setError('');
 
     try {
-      const token = localStorage.getItem('token');
-      if (!token) {
-        throw new Error('No authentication token found. Please log in.');
-      }
-      const res = await fetch('/api/shipments', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify(formData),
-      });
+      const trackingNumber = generateTrackingNumber();
+      setTrackingCode(trackingNumber);
 
-      const data = await res.json();
-      if (!res.ok) {
-        throw new Error(data.error || 'Failed to create shipment');
-      }
+      const shipment = {
+        trackingNumber,
+        sender: formData.sender,
+        receiver: formData.receiver,
+        package: formData.package,
+        status: 'pending',
+        currentLocation: formData.sender.address || 'Origin',
+        history: [
+          {
+            status: 'pending',
+            location: formData.sender.address || 'Origin',
+            description: 'Package received and ready for shipment',
+            date: new Date().toISOString(),
+          },
+        ],
+      };
 
-      router.push(`/tracking/${data.trackingNumber}`);
+      const stored = typeof window !== 'undefined' ? window.localStorage.getItem('shipments') : null;
+      const shipments = stored ? JSON.parse(stored) : [];
+      window.localStorage.setItem('shipments', JSON.stringify([...shipments, shipment]));
+
+      setTimeout(() => {
+        router.push(`/tracking/${trackingNumber}`);
+      }, 1600);
     } catch (err) {
-      setError(err.message);
-    } finally {
+      setError(err.message || 'Failed to generate tracking number');
       setIsSubmitting(false);
     }
   };
-
-  if (loading) {
-    return <div className="min-h-screen bg-white">Loading...</div>;
-  }
-
-  if (!user) {
-    return null; // Redirecting to /login
-  }
 
   return (
     <section className="section">
@@ -164,8 +143,28 @@ export default function SendPackage() {
             <h1>Send a Package</h1>
           </div>
           <div className="card-body">
-            {error && <div className="alert alert-error">{error}</div>}
-            <form onSubmit={handleSubmit}>
+            {!(role === 'admin' || role === 'worker') ? (
+              <div className="send-access-container">
+                <div className="alert alert-info">
+                  <h2 className="text-lg font-semibold mb-3">Access Restricted</h2>
+                  <p className="mb-4">
+                    Only admins and workers can send packages. Please login or signup to continue.
+                  </p>
+                  <Link href="/admin" className="btn btn-primary">
+                    Go to Admin Panel
+                  </Link>
+                </div>
+              </div>
+            ) : (
+              <>
+                {error && <div className="alert alert-error">{error}</div>}
+                {trackingCode && (
+                  <div className="alert alert-success">
+                    Tracking code generated: <strong>{trackingCode}</strong>
+                    <span className="tracking-note"> Redirecting shortly...</span>
+                  </div>
+                )}
+                <form onSubmit={handleSubmit}>
               <div className="form-section">
                 <h2>Sender Information</h2>
                 <div className="form-grid">
@@ -363,7 +362,9 @@ export default function SendPackage() {
                   {isSubmitting ? 'Processing...' : 'Ship Package'}
                 </button>
               </div>
-            </form>
+                </form>
+              </>
+            )}
           </div>
         </div>
       </div>

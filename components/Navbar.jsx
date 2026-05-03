@@ -1,16 +1,22 @@
 'use client'
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import { FaShippingFast } from 'react-icons/fa'
-import { useAuth } from '@/components/AuthProvider'
 
 export default function Navbar() {
-  const { user, logout } = useAuth()
   const [isMenuOpen, setIsMenuOpen] = useState(false)
+  const [role, setRole] = useState('')
+
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      setRole(window.localStorage.getItem('role') || '')
+    }
+  }, [])
 
   const toggleMenu = () => setIsMenuOpen(!isMenuOpen)
 
   const closeMenu = () => setIsMenuOpen(false)
+  const canSend = role === 'admin' || role === 'worker'
 
   return (
     <nav className="navbar shadow-soft">
@@ -19,29 +25,22 @@ export default function Navbar() {
           <div className="flex items-center">
             <Link href="/" className="nav-brand">
               <FaShippingFast className="h-8 w-8 text-primary mr-2" />
-              <span className="gradient-text">Oma-Airflight</span>
+              <div className="logo-container">
+  <span className="gradient-text moving-logo">Oma-Airflight🚛</span>
+</div>
             </Link>
           </div>
           {/* Desktop Menu */}
           <div className="desktop-nav hidden md:flex items-center space-x-8">
             <Link href="/" className="nav-link">Home</Link>
+            <Link href="/services" className="nav-link">Services</Link>
+            <Link href="/pricing" className="nav-link">Pricing</Link>
             <Link href="/track" className="nav-link">Track</Link>
-            <Link href="/send" className="nav-link">Send</Link>
+            {canSend && <Link href="/send" className="nav-link">Send</Link>}
+            <Link href="/admin" className="nav-link">Admin</Link>
             <Link href="/blog" className="nav-link">Blog</Link>
+            <Link href="/support" className="nav-link">Support</Link>
             <Link href="/contact" className="nav-link">Contact</Link>
-            {user ? (
-              <>
-                <span className="text-gray-700 font-lora font-semibold text-base">Welcome, {user.name}</span>
-                <button onClick={logout} className="nav-link">
-                  Logout
-                </button>
-              </>
-            ) : (
-              <>
-                <Link href="/login" className="nav-link">Login</Link>
-                <Link href="/signup" className="nav-link">Signup</Link>
-              </>
-            )}
             <Link href="/quote" className="btn btn-primary">
               Get Quote
             </Link>
@@ -61,23 +60,14 @@ export default function Navbar() {
         {/* Mobile Menu */}
         <div className={`nav-links md:hidden ${isMenuOpen ? 'mobile-active' : ''}`}>
           <Link href="/" className="nav-link" onClick={closeMenu}>Home</Link>
+          <Link href="/services" className="nav-link" onClick={closeMenu}>Services</Link>
+          <Link href="/pricing" className="nav-link" onClick={closeMenu}>Pricing</Link>
           <Link href="/track" className="nav-link" onClick={closeMenu}>Track</Link>
-          <Link href="/send" className="nav-link" onClick={closeMenu}>Send</Link>
+          {canSend && <Link href="/send" className="nav-link" onClick={closeMenu}>Send</Link>}
+          <Link href="/admin" className="nav-link" onClick={closeMenu}>Admin</Link>
           <Link href="/blog" className="nav-link" onClick={closeMenu}>Blog</Link>
+          <Link href="/support" className="nav-link" onClick={closeMenu}>Support</Link>
           <Link href="/contact" className="nav-link" onClick={closeMenu}>Contact</Link>
-          {user ? (
-            <>
-              <span className="user-greeting">Welcome, {user.name}</span>
-              <button onClick={() => { logout(); closeMenu(); }} className="nav-link">
-                Logout
-              </button>
-            </>
-          ) : (
-            <>
-              <Link href="/login" className="nav-link" onClick={closeMenu}>Login</Link>
-              <Link href="/signup" className="nav-link" onClick={closeMenu}>Signup</Link>
-            </>
-          )}
           <Link href="/quote" className="btn btn-primary" onClick={closeMenu}>
             Get Quote
           </Link>
