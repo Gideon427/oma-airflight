@@ -1345,8 +1345,8 @@ body {
 }
 .mobile-lang-top-right {
   position: absolute;
-  right: 52px; /* leaves space for hamburger */
-  top: 50%;
+  left: 202px; /* leaves space for hamburger */
+  top: 65%;
   transform: translateY(-50%);
   z-index: 9999;
 }
