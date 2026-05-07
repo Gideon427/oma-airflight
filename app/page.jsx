@@ -3,6 +3,8 @@
 import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import Blog from '@/components/Blog'
+import GoogleTranslateProvider from '@/components/GoogleTranslateProvider'
+
 export default function Home() {
   const features = [
     {
@@ -312,6 +314,9 @@ const blogPosts = [
       </section>
 
       <Blog posts={blogPosts} />
+      <div className="mb-4">
+  <GoogleTranslateProvider /> 
+</div>
     </>
   )
 }
