@@ -30,7 +30,7 @@ export default function Navbar() {
             <Link href="/" className="nav-brand flex items-center">
               <FaShippingFast className="h-8 w-8 text-primary mr-2" />
               <span className="gradient-text moving-logo">
-                Oma-Airflight🚛
+                SWIFTSHIP🚛
               </span>
             </Link>
 

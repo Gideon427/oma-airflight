@@ -97,7 +97,7 @@ const blogPosts = [
       <section className="section">
         <div className="container">
           <div className="section-title">
-            <h2>Why Choose Oma-Airflight?</h2>
+            <h2>Why Choose SWIFTSHIP?</h2>
             <p>We provide the best shipping experience with our innovative solutions</p>
           </div>
 
@@ -137,7 +137,7 @@ const blogPosts = [
         <div className="container">
           <div className="section-title">
             <h2>Ready to Ship?</h2>
-            <p>Get an instant quote and see how much you can save with Oma-Airflight</p>
+            <p>Get an instant quote and see how much you can save with SWIFTSHIP</p>
             <Link href="/quote" className="btn btn-primary btn-lg">
               Get a Free Quote
             </Link>
@@ -197,7 +197,7 @@ const blogPosts = [
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             <div className="card testimonial-card">
               <div className="testimonial-content">
-                <p>"Oma-Airflight has revolutionized our shipping process. Their real-time tracking and reliable service have saved us countless hours."</p>
+                <p>"SWIFTSHIP has revolutionized our shipping process. Their real-time tracking and reliable service have saved us countless hours."</p>
               </div>
               <div className="testimonial-author">
                 <div className="author-avatar">JD</div>
@@ -209,7 +209,7 @@ const blogPosts = [
             </div>
             <div className="card testimonial-card">
               <div className="testimonial-content">
-                <p>"Exceptional customer service and lightning-fast delivery. We've been using Oma-Airflight for 3 years and couldn't be happier."</p>
+                <p>"Exceptional customer service and lightning-fast delivery. We've been using SWIFTSHIP for 3 years and couldn't be happier."</p>
               </div>
               <div className="testimonial-author">
                 <div className="author-avatar">SM</div>

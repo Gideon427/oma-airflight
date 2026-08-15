@@ -16,9 +16,9 @@ export default function Footer() {
         <div className="footer-grid">
           {/* Company Info */}
           <div className="footer-company">
-            <div className="footer-brand">
+              <div className="footer-brand">
               <FaShippingFast className="footer-logo" />
-              <span className="footer-brand-name">Oma-Airflight</span>
+              <span className="footer-brand-name">SWIFTSHIP</span>
             </div>
             <p className="footer-description">
               Fast and reliable shipping services worldwide. We deliver your packages with care and precision.
@@ -82,7 +82,7 @@ export default function Footer() {
 
         {/* Footer Bottom */}
         <div className="footer-bottom">
-          <p>&copy; {new Date().getFullYear()} Oma-Airflight. All rights reserved.</p>
+          <p>&copy; {new Date().getFullYear()} SWIFTSHIP. All rights reserved.</p>
           <div className="footer-legal">
             <a href="/privacy">Privacy Policy</a>
             <a href="/terms">Terms of Service</a>
