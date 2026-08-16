@@ -114,6 +114,7 @@ export default function AdminPage() {
   const [trackingCode, setTrackingCode] = useState('')
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [loading, setLoading] = useState(false)
+  const [updateDeclaredValue, setUpdateDeclaredValue] = useState('')
 
   const [formData, setFormData] = useState({
     sender: { name: '', address: '', email: '', phone: '' },
@@ -263,10 +264,7 @@ const handleUpdate = async (e) => {
     const shipment = shipments.find(s => s.trackingNumber === selectedTracking)
     if (!shipment) return
 
-    // Use status-based mapping to determine routeIndex
-    // This allows both forward AND backward updates
     const newRouteIndex = getRouteIndexForStatus(status, shipment.route)
-
     const newLocation = location || shipment.route?.[newRouteIndex] || shipment.currentLocation
     const coords = getCoordinatesFromLocation(newLocation)
     const newDescription = description || `Package ${status.replace('-', ' ')} at ${newLocation}`
@@ -279,15 +277,11 @@ const handleUpdate = async (e) => {
     }
 
     let updatedHistory = [...shipment.history]
-
-    // 🔥 SMART LOGIC: Update last entry if status is the same
     const lastEvent = updatedHistory[updatedHistory.length - 1]
 
     if (lastEvent && lastEvent.status === status) {
-      // Update the existing entry
       updatedHistory[updatedHistory.length - 1] = newEvent
     } else {
-      // Add new entry if status changed
       updatedHistory.push(newEvent)
     }
 
@@ -301,14 +295,20 @@ const handleUpdate = async (e) => {
       lastUpdated: serverTimestamp()
     }
 
+    // ✅ Update declared value if provided
+    if (updateDeclaredValue !== '') {
+      updateData['package.value'] = parseFloat(updateDeclaredValue) || 0
+    }
+
     await updateShipment(selectedTracking, updateData)
     await fetchShipments()
 
-    // Reset form
+    // Reset form fields
     setLocation('')
     setDescription('')
     setSelectedTracking('')
     setStatus('processing')
+    setUpdateDeclaredValue('')   // ← reset the new field
     setError('✅ Shipment updated successfully!')
 
   } catch (err) {
@@ -481,10 +481,22 @@ return (
                       <label className="form-label">Date & Time</label>
                       <input type="datetime-local" value={eventTime} onChange={(e) => setEventTime(e.target.value)} className="form-input" />
                     </div>
+                    <div className="form-group">
+  <label className="form-label">Declared Value ($)</label>
+  <input
+    type="number"
+    value={updateDeclaredValue}
+    onChange={(e) => setUpdateDeclaredValue(e.target.value)}
+    className="form-input"
+    placeholder="Update declared value"
+    step="0.1"
+  />
+</div>
 
                     <button type="submit" className="btn btn-primary btn-block">Save Tracking Update</button>
                   </form>
                 </div>
+                
 
                 {/* Send New Package */}
                 <div className="pt-8 border-t border-gray-200">
