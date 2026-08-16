@@ -431,7 +431,11 @@ return (
                               <td>{shipment.receiver.name}</td>
                               <td>{shipment.status}</td>
                               <td>{shipment.currentLocation}</td>
-                              <td>{new Date(shipment.history.at(-1)?.date).toLocaleString()}</td>
+                              <td>
+  {shipment.history && shipment.history.length > 0
+    ? new Date(shipment.history[shipment.history.length - 1].date).toLocaleString()
+    : '—'}
+</td>
                             </tr>
                           ))}
                         </tbody>

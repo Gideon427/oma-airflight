@@ -4,6 +4,8 @@ import Footer from '@/components/Footer'
 import WhatsAppButton from '@/components/WhatsAppButton'
 import GoogleTranslateProvider from '@/components/GoogleTranslateProvider'
 import TranslationLoader from '@/components/TranslationLoader' // ✅ new
+import 'core-js/stable'
+import 'regenerator-runtime/runtime'
 
 export const metadata = {
   title: 'SwiftShip - Fast & Reliable Shipping',
