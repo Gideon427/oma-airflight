@@ -71,11 +71,11 @@ export default function Footer() {
             <address className="footer-address">
               <p>123 Shipping Avenue</p>
               <p>New York, NY 10001</p>
-              <p>Email: <a href="mailto:Omahaairflighteasecargo@gmail.com">Omahaairflighteasecargo@gmail.com</a></p>
-              <p>Phone: <a href="tel:+16503020768">Phone:+1 (650) 302-0768 📞</a></p>
+              <p>Email: <a href="mailto:Omahswiftship@gmail.com">Omahswiftship@gmail.com</a></p>
+              <p>Phone: <a href="tel:+16503020768">+1 (650) 302-0768 📞</a></p>
               <p>Whatsapp: <a href="https://wa.me/16503020768" 
               className='social link'
-              target="_blank" rel="noopener noreferrer">WhatsApp: +1 (650) 302-0768 📞</a></p>
+              target="_blank" rel="noopener noreferrer">+1 (650) 302-0768 📞</a></p>
             </address>
           </div>
         </div>
@@ -93,7 +93,7 @@ export default function Footer() {
 
       <style jsx>{`
         .footer {
-          background-color: var(--gray-800);
+          background-color: var(--gray-900);
           color: var(--white);
           padding: var(--space-2xl) 0 var(--space-xl);
         }
@@ -174,15 +174,16 @@ export default function Footer() {
 
         .footer-address {
           font-style: normal;
-          color: var(--gray-300);
+          color: var(--white);
         }
 
         .footer-address p {
           margin-bottom: var(--space-sm);
+          color: var(--white);
         }
 
         .footer-address a {
-          color: var(--gray-300);
+          color: var(--white);
           transition: color 0.2s ease;
         }
 

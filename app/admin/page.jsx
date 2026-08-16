@@ -263,14 +263,9 @@ const handleUpdate = async (e) => {
     const shipment = shipments.find(s => s.trackingNumber === selectedTracking)
     if (!shipment) return
 
-    let newRouteIndex = shipment.routeIndex || 0
-
-    if (status === 'in-transit' && newRouteIndex < shipment.route.length - 1) {
-      newRouteIndex++
-    }
-    if (status === 'delivered') {
-      newRouteIndex = shipment.route.length - 1
-    }
+    // Use status-based mapping to determine routeIndex
+    // This allows both forward AND backward updates
+    const newRouteIndex = getRouteIndexForStatus(status, shipment.route)
 
     const newLocation = location || shipment.route?.[newRouteIndex] || shipment.currentLocation
     const coords = getCoordinatesFromLocation(newLocation)
@@ -322,51 +317,62 @@ const handleUpdate = async (e) => {
   }
 }
 
-   const handleLogin = (e) => {
-    e.preventDefault()
-    setError('')
+// Status to RouteIndex mapping
+const getRouteIndexForStatus = (statusValue, route) => {
+  const routeLength = route?.length || 1
+  const statusMap = {
+    'pending': 0,
+    'processing': 0,
+    'in-transit': Math.max(0, Math.min(1, routeLength - 2)),
+    'out-for-delivery': Math.max(0, routeLength - 2),
+    'delivered': Math.max(0, routeLength - 1),
+  }
+  return statusMap[statusValue] || 0
+}
 
-    if (adminEmail === ADMIN_EMAIL && adminPassword === ADMIN_PASSWORD) {
-      setIsAdmin(true)
-      setUserRole('admin')
-    } else if (adminEmail === WORKER_EMAIL && adminPassword === WORKER_PASSWORD) {
-      setIsWorker(true)
-      setUserRole('worker')
-    } else {
-      setError('Invalid credentials')
-      return
-    }
+const handleLogin = (e) => {
+  e.preventDefault()
+  setError('')
 
-    setAdminEmail('')
-    setAdminPassword('')
+  if (adminEmail === ADMIN_EMAIL && adminPassword === ADMIN_PASSWORD) {
+    setIsAdmin(true)
+    setUserRole('admin')
+  } else if (adminEmail === WORKER_EMAIL && adminPassword === WORKER_PASSWORD) {
+    setIsWorker(true)
+    setUserRole('worker')
+  } else {
+    setError('Invalid credentials')
+    return
   }
 
-  const handleLogout = () => {
-    setIsAdmin(false)
-    setIsWorker(false)
-    setUserRole('')
-    setShipments([])
-    setError('')
-  }
+  setAdminEmail('')
+  setAdminPassword('')
+}
 
-  useEffect(() => {
-    if (isAdmin || isWorker) fetchShipments()
-  }, [isAdmin, isWorker])
-  // Keep your existing beautiful UI (return JSX) unchanged
-  return (
-    <section className="section">
-      <div className="container">
-        <div className="card form-container">
-          <div className="card-header">
-            <h1>Admin Panel</h1>
-            <p className="text-sm text-gray-600">Manage shipments and tracking updates</p>
-            {userRole && <p className="text-sm text-gray-400 mt-2">Logged in as: <strong>{userRole}</strong></p>}
-          </div>
+const handleLogout = () => {
+  setIsAdmin(false)
+  setIsWorker(false)
+  setUserRole('')
+  setShipments([])
+  setError('')
+}
 
+useEffect(() => {
+  if (isAdmin || isWorker) fetchShipments()
+}, [isAdmin, isWorker])
+
+return (
+  <section className="section">
+    <div className="container">
+      <div className="card form-container">
+        <div className="card-header">
+          <h1>Admin Panel</h1>
+          <p className="text-sm text-gray-600">Manage shipments and tracking updates</p>
+          {userRole && <p className="text-sm text-gray-400 mt-2">Logged in as: <strong>{userRole}</strong></p>}
+        </div>
+
+        <div className="card-body">
           <div className="card-body">
-            {/* Your existing login, table, update form, and create form stay the same */}
-            {/* ... paste your full return JSX from previous version here ... */}
-                      <div className="card-body">
             {error && <div className="alert alert-error">{error}</div>}
 
             {!(isAdmin || isWorker) ? (
@@ -397,7 +403,7 @@ const handleUpdate = async (e) => {
               </form>
             ) : (
               <>
-                <div className="mb-6">
+                <div className="mb-4">
                   <button onClick={handleLogout} className="btn btn-secondary">Logout</button>
                 </div>
 
