@@ -461,73 +461,517 @@ h6 { font-size: var(--text-base); }p {
 .blog-read-more:hover {
   text-decoration: underline;
 }/* ===== Navigation ===== */
+/* =========================================================
+   SWIFTSHIP NAVBAR
+   ========================================================= */
+
 .navbar {
   position: sticky;
   top: 0;
   z-index: 1000;
-  background-color: var(--primary-light);
+
+  width: 100%;
+
+  background: rgba(255, 255, 255, 0.96);
+
   border-bottom: 1px solid var(--gray-200);
-  box-shadow: var(--shadow-sm);
-}.nav-container {
+
+  box-shadow:
+    0 2px 12px rgba(15, 23, 42, 0.06);
+
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+}
+
+
+/* =========================================================
+   NAV CONTAINER
+   ========================================================= */
+
+.nav-container {
+  width: 100%;
+  max-width: 1280px;
+
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: var(--space-md) var(--space-lg);
-  max-width: 1280px;
+
+  padding: 0 var(--space-lg);
+
   margin: 0 auto;
-}.nav-brand {
-  display: flex;
+}
+
+
+/* =========================================================
+   BRAND
+   ========================================================= */
+
+.nav-brand {
+  display: inline-flex;
   align-items: center;
+
+  flex-shrink: 0;
+
+  text-decoration: none;
+
   font-family: 'Lora', serif;
   font-size: var(--text-xl);
   font-weight: 700;
+
   color: var(--primary-color);
-}.nav-brand:hover {
+
+  transition:
+    color 0.2s ease,
+    transform 0.2s ease;
+}
+
+.nav-brand:hover {
   color: var(--primary-dark);
-}.nav-links {
+
+  transform: translateY(-1px);
+}
+
+.nav-brand svg {
+  flex-shrink: 0;
+
+  transition:
+    transform 0.25s ease;
+}
+
+.nav-brand:hover svg {
+  transform: translateX(2px);
+}
+
+
+/* =========================================================
+   DESKTOP NAVIGATION
+   ========================================================= */
+
+.desktop-nav {
   display: flex;
   align-items: center;
-  gap: var(--space-md);
-}.nav-link {
-  font-family: 'Lora', serif;
-  font-size: var(--text-base);
-  font-weight: 600;
+
+  gap: 6px;
+}
+
+
+/* =========================================================
+   NAV BUTTONS
+   ========================================================= */
+
+.desktop-nav .nav-link {
+  position: relative;
+
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  min-height: 40px;
+
+  padding: 0.5rem 1rem;
+
+  border: 1px solid transparent;
+  border-radius: var(--border-radius-full);
+
+  background: transparent;
+
   color: var(--gray-600);
-  padding: 0.5rem 1.2rem;
-  border: 1px solid var(--primary-color);
-  border-radius: var(--border-radius-full);
-  background-color: var(--white);
-  transition: all 0.3s ease;
+
+  font-family:
+    Inter,
+    -apple-system,
+    BlinkMacSystemFont,
+    "Segoe UI",
+    sans-serif;
+
+  font-size: 0.875rem;
+  font-weight: 600;
+
+  line-height: 1;
+
   text-align: center;
-}.nav-link:hover {
-  background-color: var(--primary-color);
-  color: var(--white);
-  border-color: var(--primary-dark);
-  box-shadow: var(--shadow-sm);
-}.nav-link.active {
-  background-color: var(--primary-color);
-  color: var(--white);
-  border-color: var(--primary-dark);
-}.nav-toggle {
-  display: none;
-  width: 40px;
-  height: 40px;
-  background-color: var(--white);
-  border: 1px solid var(--primary-color);
-  border-radius: var(--border-radius-full);
-  padding: var(--space-xs);
-  cursor: pointer;
-  transition: all 0.3s ease;
-}.nav-toggle:hover {
+  text-decoration: none;
+
+  white-space: nowrap;
+
+  transition:
+    color 0.2s ease,
+    background-color 0.2s ease,
+    border-color 0.2s ease,
+    box-shadow 0.2s ease,
+    transform 0.2s ease;
+}
+
+
+/* =========================================================
+   NAV BUTTON HOVER
+   ========================================================= */
+
+.desktop-nav .nav-link:hover {
+  color: var(--primary-color);
+
   background-color: var(--primary-light);
+
+  border-color: rgba(37, 99, 235, 0.15);
+
+  box-shadow:
+    0 3px 10px rgba(37, 99, 235, 0.08);
+
+  transform: translateY(-1px);
+}
+
+
+/* =========================================================
+   ACTIVE NAV BUTTON
+   ========================================================= */
+
+.desktop-nav .nav-link.active {
+  color: var(--white);
+
+  background-color: var(--primary-color);
+
   border-color: var(--primary-dark);
-}.nav-toggle svg {
-  width: 24px;
-  height: 24px;
-  stroke: var(--primary-color);
-  transition: stroke 0.3s ease;
-}.nav-toggle:hover svg {
-  stroke: var(--primary-dark);
+
+  box-shadow:
+    0 4px 10px rgba(37, 99, 235, 0.18);
+}
+
+
+/* =========================================================
+   SEND BUTTON
+   ========================================================= */
+
+.desktop-nav .nav-send-link {
+  color: #15803d;
+
+  background: #f0fdf4;
+
+  border-color: #bbf7d0;
+}
+
+.desktop-nav .nav-send-link:hover {
+  color: #166534;
+
+  background: #dcfce7;
+
+  border-color: #86efac;
+
+  box-shadow:
+    0 4px 10px rgba(34, 197, 94, 0.12);
+}
+
+
+/* =========================================================
+   ADMIN BUTTON
+   ========================================================= */
+
+.desktop-nav .nav-admin-link {
+  color: #374151;
+
+  background: #f8fafc;
+
+  border-color: #e5e7eb;
+}
+
+.desktop-nav .nav-admin-link:hover {
+  color: var(--primary-color);
+
+  background: var(--primary-light);
+
+  border-color: #bfdbfe;
+}
+
+
+/* =========================================================
+   GET QUOTE BUTTON
+   ========================================================= */
+
+.desktop-nav .btn-primary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  min-height: 40px;
+
+  padding: 0.5rem 1.15rem;
+
+  margin-left: 5px;
+
+  border: 1px solid var(--primary-color);
+
+  border-radius: var(--border-radius-full);
+
+  background: var(--primary-color);
+
+  color: var(--white);
+
+  font-family:
+    Inter,
+    -apple-system,
+    BlinkMacSystemFont,
+    "Segoe UI",
+    sans-serif;
+
+  font-size: 0.875rem;
+  font-weight: 700;
+
+  text-decoration: none;
+
+  box-shadow:
+    0 4px 10px rgba(37, 99, 235, 0.15);
+
+  transition:
+    background-color 0.2s ease,
+    border-color 0.2s ease,
+    box-shadow 0.2s ease,
+    transform 0.2s ease;
+}
+
+.desktop-nav .btn-primary:hover {
+  background: var(--primary-dark);
+
+  border-color: var(--primary-dark);
+
+  color: var(--white);
+
+  box-shadow:
+    0 7px 16px rgba(37, 99, 235, 0.22);
+
+  transform: translateY(-1px);
+}
+
+.desktop-nav .btn-primary:active {
+  transform: translateY(0);
+}
+
+
+/* =========================================================
+   MOBILE HAMBURGER
+   ========================================================= */
+
+.nav-toggle {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  width: 42px;
+  height: 42px;
+
+  padding: 0;
+
+  border: 1px solid var(--gray-200);
+
+  border-radius: 10px;
+
+  background: var(--white);
+
+  color: var(--primary-color);
+
+  cursor: pointer;
+
+  font-size: 22px;
+  line-height: 1;
+
+  transition:
+    background-color 0.2s ease,
+    border-color 0.2s ease,
+    box-shadow 0.2s ease,
+    transform 0.2s ease;
+}
+
+.nav-toggle:hover {
+  background: var(--primary-light);
+
+  border-color: var(--primary-color);
+
+  box-shadow:
+    0 4px 10px rgba(37, 99, 235, 0.10);
+
+  transform: translateY(-1px);
+}
+
+.nav-toggle:active {
+  transform: translateY(0);
+}
+
+
+/* =========================================================
+   MOBILE MENU
+   ========================================================= */
+
+.nav-links {
+  display: flex;
+  align-items: center;
+}
+
+
+/* Mobile closed state */
+
+@media (max-width: 767px) {
+
+  .nav-container {
+    padding: 0 var(--space-md);
+  }
+
+  .desktop-nav {
+    display: none;
+  }
+
+  .nav-links {
+    display: flex;
+
+    flex-direction: column;
+    align-items: stretch;
+
+    width: 100%;
+
+    gap: 6px;
+
+    max-height: 0;
+
+    overflow: hidden;
+
+    opacity: 0;
+
+    padding: 0;
+
+    transform: translateY(-8px);
+
+    transition:
+      max-height 0.3s ease,
+      opacity 0.2s ease,
+      transform 0.25s ease,
+      padding 0.25s ease;
+  }
+
+  .nav-links.mobile-active {
+    max-height: 700px;
+
+    opacity: 1;
+
+    padding: 12px 0 18px;
+
+    transform: translateY(0);
+  }
+
+
+  /* Mobile links */
+
+  .nav-links > a {
+    display: flex;
+    align-items: center;
+
+    width: 100%;
+    min-height: 46px;
+
+    padding: 0 15px;
+
+    border: 1px solid var(--gray-200);
+
+    border-radius: 10px;
+
+    background: var(--white);
+
+    color: var(--gray-600);
+
+    font-family:
+      Inter,
+      -apple-system,
+      BlinkMacSystemFont,
+      "Segoe UI",
+      sans-serif;
+
+    font-size: 14px;
+    font-weight: 600;
+
+    text-decoration: none;
+
+    transition:
+      background-color 0.2s ease,
+      color 0.2s ease,
+      border-color 0.2s ease,
+      transform 0.2s ease;
+  }
+
+  .nav-links > a:hover {
+    color: var(--primary-color);
+
+    background: var(--primary-light);
+
+    border-color: #bfdbfe;
+
+    transform: translateX(3px);
+  }
+
+
+  /* Mobile Get Quote */
+
+  .nav-links > a:last-child {
+    justify-content: center;
+
+    margin-top: 6px;
+
+    background: var(--primary-color);
+
+    border-color: var(--primary-color);
+
+    color: var(--white);
+
+    font-weight: 700;
+
+    box-shadow:
+      0 5px 14px rgba(37, 99, 235, 0.16);
+  }
+
+  .nav-links > a:last-child:hover {
+    background: var(--primary-dark);
+
+    border-color: var(--primary-dark);
+
+    color: var(--white);
+
+    transform: translateY(-1px);
+  }
+
+
+  /* Mobile language */
+
+  .mobile-lang-top-right {
+    position: absolute;
+
+    right: 58px;
+    top: 50%;
+
+    z-index: 40;
+
+    transform: translateY(-50%);
+  }
+}
+
+
+/* =========================================================
+   TABLET / SMALL DESKTOP
+   ========================================================= */
+
+@media (min-width: 768px) and (max-width: 1150px) {
+
+  .desktop-nav {
+    gap: 2px;
+  }
+
+  .desktop-nav .nav-link {
+    padding-left: 0.65rem;
+    padding-right: 0.65rem;
+
+    font-size: 0.78rem;
+  }
+
+  .desktop-nav .btn-primary {
+    padding-left: 0.8rem;
+    padding-right: 0.8rem;
+
+    font-size: 0.78rem;
+  }
 }
 /* ===== Footer ===== */
 .footer {
@@ -1435,3 +1879,58 @@ body {
   }
 }
   
+/* Hide the "Rate this translation" popup */
+.goog-te-banner-frame,
+.goog-te-menu-frame,
+.goog-te-float-top,
+.goog-te-float-top .goog-te-float-close {
+  display: none !important;
+}
+
+/* Hide the "Original text" tooltip that appears on hover */
+.goog-te-banner-frame,
+#goog-gt-tt,
+.goog-gt-tt,
+.goog-tooltip,
+.goog-tooltip span,
+.goog-te-balloon-frame,
+.goog-te-balloon {
+  display: none !important;
+}
+
+/* Hide the Google Translate top banner if it appears */
+.goog-te-banner-frame {
+  display: none !important;
+  height: 0 !important;
+  min-height: 0 !important;
+  margin: 0 !important;
+  padding: 0 !important;
+}
+
+/* Prevent the body from shifting when translate is active */
+body {
+  top: 0 !important;
+  position: static !important;
+}
+
+/* Hide the "Original" hover overlay on translated text */
+.goog-te-gadget-simple,
+.goog-te-gadget-icon,
+.goog-te-gadget-simple img {
+  display: none !important;
+}
+
+/* Hide the blue underline on translated text */
+.goog-te-gadget {
+  display: none !important;
+}
+
+/* Hide the "Suggest an edit" or feedback popup */
+.goog-te-gadget-simple .goog-te-gadget-icon {
+  display: none !important;
+}
+
+/* This prevents the "Click to translate" popup */
+#goog-gt-tt {
+  display: none !important;
+}

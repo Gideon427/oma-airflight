@@ -43,7 +43,7 @@ export default function Navbar() {
               <Link href="/track" className="nav-link">Track</Link>
 
               {canSend && (
-                <Link href="/send" className="nav-link">Send</Link>
+                <Link href="/admin" className="nav-link">Send</Link>
               )}
 
               <Link href="/admin" className="nav-link">Admin</Link>
