@@ -308,6 +308,9 @@ export default function AdminPage() {
   const [showDeleteModal, setShowDeleteModal] = useState(false)
   const [isDeleting, setIsDeleting] = useState(false)
 
+  // EDIT DATA (full editable copy)
+  const [editData, setEditData] = useState(null)
+
   // ======================================================
   // FETCH
   // ======================================================
@@ -374,6 +377,7 @@ export default function AdminPage() {
     setUserRole('')
     setShipments([])
     setSelectedTracking(null)
+    setEditData(null)
     setError('')
     setToast('')
   }
@@ -389,7 +393,7 @@ export default function AdminPage() {
   }, [isAdmin, isWorker])
 
   // ======================================================
-  // FORM CHANGE
+  // FORM CHANGE (for create)
   // ======================================================
 
   const handleChange = (e) => {
@@ -450,6 +454,77 @@ export default function AdminPage() {
       }
 
       return prev
+    })
+  }
+
+  // ======================================================
+  // EDIT CHANGE (for editData)
+  // ======================================================
+
+  const handleEditChange = (e) => {
+    const { name, value } = e.target
+
+    let parsedValue = value
+
+    if (
+      name.startsWith('dimensions.') ||
+      name === 'package.weight' ||
+      name === 'package.value'
+    ) {
+      parsedValue =
+        value === '' ? '' : parseFloat(value) || ''
+    }
+
+    setEditData((prev) => {
+      if (!prev) return prev
+
+      if (
+        name.startsWith('sender.') ||
+        name.startsWith('receiver.')
+      ) {
+        const [parent, child] = name.split('.')
+
+        return {
+          ...prev,
+          [parent]: {
+            ...prev[parent],
+            [child]: parsedValue,
+          },
+        }
+      }
+
+      if (name.startsWith('package.')) {
+        const [, child] = name.split('.')
+
+        return {
+          ...prev,
+          package: {
+            ...prev.package,
+            [child]: parsedValue,
+          },
+        }
+      }
+
+      if (name.startsWith('dimensions.')) {
+        const [, dimension] = name.split('.')
+
+        return {
+          ...prev,
+          package: {
+            ...prev.package,
+            dimensions: {
+              ...prev.package.dimensions,
+              [dimension]: parsedValue,
+            },
+          },
+        }
+      }
+
+      // fallback for top-level fields (if any)
+      return {
+        ...prev,
+        [name]: parsedValue,
+      }
     })
   }
 
@@ -541,6 +616,19 @@ export default function AdminPage() {
   const handleSelectShipment = (shipment) => {
     setSelectedTracking(shipment.trackingNumber)
 
+    // Deep clone the shipment into editData
+    const cloned = {
+      ...shipment,
+      sender: { ...shipment.sender },
+      receiver: { ...shipment.receiver },
+      package: {
+        ...shipment.package,
+        dimensions: { ...shipment.package?.dimensions },
+      },
+    }
+    setEditData(cloned)
+
+    // Pre-fill the status/location fields for the quick update
     setStatus(shipment.status || 'processing')
     setLocation(shipment.currentLocation || '')
     setDescription('')
@@ -560,7 +648,7 @@ export default function AdminPage() {
   const handleUpdate = async (e) => {
     e.preventDefault()
 
-    if (!selectedTracking) {
+    if (!selectedTracking || !editData) {
       setError('Please select a shipment first.')
       return
     }
@@ -578,6 +666,7 @@ export default function AdminPage() {
         throw new Error('Shipment not found')
       }
 
+      // Compute new route index and location based on status
       const newRouteIndex =
         getRouteIndexForStatus(
           status,
@@ -624,26 +713,30 @@ export default function AdminPage() {
         updatedHistory.push(newEvent)
       }
 
-      const updatedPackage = {
-        ...(shipment.package || {}),
-      }
+      // Start with the full editData (all editable fields)
+      let updatedShipment = { ...editData }
 
-      if (updateDeclaredValue !== '') {
-        updatedPackage.value =
-          parseFloat(updateDeclaredValue) || 0
-      }
-
-      const updateData = {
+      // Override status, location, history, and tracking-related fields
+      updatedShipment = {
+        ...updatedShipment,
         status,
         currentLocation: newLocation,
         currentLat: coords.lat,
         currentLng: coords.lng,
         routeIndex: newRouteIndex,
         history: updatedHistory,
-        package: updatedPackage,
         lastUpdated: serverTimestamp(),
       }
 
+      // Override package.value if updateDeclaredValue is provided
+      if (updateDeclaredValue !== '') {
+        updatedShipment.package = {
+          ...updatedShipment.package,
+          value: parseFloat(updateDeclaredValue) || 0,
+        }
+      }
+
+      // Find the document and update
       const q = query(
         collection(db, 'shipments'),
         where(
@@ -661,7 +754,7 @@ export default function AdminPage() {
 
       await updateDoc(
         snapshot.docs[0].ref,
-        updateData
+        updatedShipment
       )
 
       await fetchShipments()
@@ -670,7 +763,9 @@ export default function AdminPage() {
         `Shipment ${selectedTracking} updated successfully.`
       )
 
+      // Reset selection and editData
       setSelectedTracking(null)
+      setEditData(null)
       setLocation('')
       setDescription('')
       setStatus('processing')
@@ -715,6 +810,7 @@ export default function AdminPage() {
       await fetchShipments()
 
       setSelectedTracking(null)
+      setEditData(null)
       setShowDeleteModal(false)
 
       setToast(
@@ -952,6 +1048,7 @@ export default function AdminPage() {
           onClick={() => {
             setActiveTab('create')
             setSelectedTracking(null)
+            setEditData(null)
           }}
           className={`admin-tab ${
             activeTab === 'create'
@@ -1524,16 +1621,17 @@ export default function AdminPage() {
             </div>
           )}
 
-          {/* UPDATE PANEL */}
-          {selectedShipment && (
+          {/* UPDATE PANEL (full edit form) */}
+          {selectedShipment && editData && (
             <div className="admin-update-layout">
 
               <div>
 
                 <button
-                  onClick={() =>
+                  onClick={() => {
                     setSelectedTracking(null)
-                  }
+                    setEditData(null)
+                  }}
                   className="admin-button admin-button-secondary"
                   style={{
                     marginBottom: '20px',
@@ -1542,269 +1640,311 @@ export default function AdminPage() {
                   ← Back to shipments
                 </button>
 
-                {/* SUMMARY */}
-                <div className="admin-card">
+                {/* EDIT FORM */}
+                <form onSubmit={handleUpdate}>
 
-                  <div className="admin-card-header">
-
-                    <div>
-                      <small>
-                        SELECTED SHIPMENT
-                      </small>
-
-                      <h2 className="admin-card-title">
-                        {
-                          selectedShipment.trackingNumber
-                        }
-                      </h2>
-                    </div>
-
-                    <span
-                      className={`admin-status ${
-                        selectedShipment.status ===
-                        'pending'
-                          ? 'admin-status-pending'
-                          : selectedShipment.status ===
-                            'processing'
-                          ? 'admin-status-processing'
-                          : selectedShipment.status ===
-                            'in-transit'
-                          ? 'admin-status-transit'
-                          : selectedShipment.status ===
-                            'out-for-delivery'
-                          ? 'admin-status-delivery'
-                          : 'admin-status-delivered'
-                      }`}
-                    >
-                      {getStatusLabel(
-                        selectedShipment.status
-                      )}
-                    </span>
-
-                  </div>
-
-                  <div className="admin-summary-grid">
-
-                    <div className="admin-summary-item">
-                      <span>Sender</span>
-                      <strong>
-                        {
-                          selectedShipment.sender?.name
-                        }
-                      </strong>
-                    </div>
-
-                    <div className="admin-summary-item">
-                      <span>Receiver</span>
-                      <strong>
-                        {
-                          selectedShipment.receiver?.name
-                        }
-                      </strong>
-                    </div>
-
-                    <div className="admin-summary-item">
-                      <span>Current Location</span>
-                      <strong>
-                        {
-                          selectedShipment.currentLocation
-                        }
-                      </strong>
-                    </div>
-
-                    <div className="admin-summary-item">
-                      <span>Declared Value</span>
-                      <strong>
-                        $
-                        {Number(
-                          selectedShipment.package
-                            ?.value || 0
-                        ).toFixed(2)}
-                      </strong>
-                    </div>
-
-                  </div>
-
-                </div>
-
-                {/* UPDATE FORM */}
-                <form
-                  onSubmit={handleUpdate}
-                  className="admin-card"
-                  style={{ marginTop: '24px' }}
-                >
-
-                  <div className="admin-card-header">
-
-                    <div>
-                      <h2 className="admin-card-title">
-                        Update Shipment
-                      </h2>
-
-                      <p className="admin-card-description">
-                        Update the current shipment status
-                        and tracking information.
-                      </p>
-                    </div>
-
-                  </div>
-
-                  <div className="admin-form-grid">
-
-                    <div className="admin-form-group">
-
-                      <label className="admin-label">
-                        Status
-                      </label>
-
-                      <select
-                        value={status}
-                        onChange={(e) =>
-                          setStatus(e.target.value)
-                        }
-                        className="admin-select"
-                      >
-                        <option value="pending">
-                          Pending
-                        </option>
-
-                        <option value="processing">
-                          Processing
-                        </option>
-
-                        <option value="in-transit">
-                          In Transit
-                        </option>
-
-                        <option value="out-for-delivery">
-                          Out for Delivery
-                        </option>
-
-                        <option value="delivered">
-                          Delivered
-                        </option>
-                      </select>
-
-                    </div>
-
-                    <Field
-                      label="Current Location"
-                      value={location}
-                      onChange={(e) =>
-                        setLocation(e.target.value)
-                      }
-                      placeholder={
-                        selectedShipment.currentLocation
-                      }
-                    />
-
-                  </div>
-
-                  {/* TRACKING EVENT */}
-                  <div className="admin-event-section">
-
-                    <button
-                      type="button"
-                      onClick={() =>
-                        setShowEventSection(
-                          !showEventSection
-                        )
-                      }
-                      className="admin-event-toggle"
-                    >
+                  {/* Heading with tracking and status */}
+                  <div className="admin-card">
+                    <div className="admin-card-header">
                       <div>
-                        <strong>
-                          Add Tracking Event
-                        </strong>
-
-                        <span>
-                          Add an optional history entry.
-                        </span>
+                        <small>EDIT SHIPMENT</small>
+                        <h2 className="admin-card-title">
+                          {selectedShipment.trackingNumber}
+                        </h2>
                       </div>
-
-                      <span>
-                        {showEventSection
-                          ? '−'
-                          : '+'}
+                      <span
+                        className={`admin-status ${
+                          selectedShipment.status === 'pending'
+                            ? 'admin-status-pending'
+                            : selectedShipment.status === 'processing'
+                            ? 'admin-status-processing'
+                            : selectedShipment.status === 'in-transit'
+                            ? 'admin-status-transit'
+                            : selectedShipment.status === 'out-for-delivery'
+                            ? 'admin-status-delivery'
+                            : 'admin-status-delivered'
+                        }`}
+                      >
+                        {getStatusLabel(selectedShipment.status)}
                       </span>
-                    </button>
-
-                    {showEventSection && (
-                      <div className="admin-form-grid">
-
-                        <div className="admin-form-group admin-form-full">
-
-                          <Field
-                            label="Event Description"
-                            value={description}
-                            onChange={(e) =>
-                              setDescription(
-                                e.target.value
-                              )
-                            }
-                            placeholder="Package arrived at sorting facility"
-                          />
-
-                        </div>
-
-                        <Field
-                          label="Date & Time"
-                          type="datetime-local"
-                          value={eventTime}
-                          onChange={(e) =>
-                            setEventTime(
-                              e.target.value
-                            )
-                          }
-                        />
-
-                        <Field
-                          label="Declared Value Override ($)"
-                          type="number"
-                          value={updateDeclaredValue}
-                          onChange={(e) =>
-                            setUpdateDeclaredValue(
-                              e.target.value
-                            )
-                          }
-                          placeholder="Optional"
-                          step="0.1"
-                        />
-
-                      </div>
-                    )}
-
+                    </div>
                   </div>
 
-                  <div className="admin-actions">
+                  {/* SENDER EDIT */}
+                  <div className="admin-card admin-form-section" style={{ marginTop: '24px' }}>
+                    <div className="admin-section-heading">
+                      <div className="admin-section-icon">↑</div>
+                      <div>
+                        <h3>Sender Information</h3>
+                        <p>Edit sender details.</p>
+                      </div>
+                    </div>
+                    <div className="admin-form-grid">
+                      <Field
+                        label="Full Name"
+                        name="sender.name"
+                        value={editData.sender?.name || ''}
+                        onChange={handleEditChange}
+                        placeholder="John Doe"
+                        required
+                      />
+                      <Field
+                        label="Address"
+                        name="sender.address"
+                        value={editData.sender?.address || ''}
+                        onChange={handleEditChange}
+                        placeholder="New York, NY"
+                        required
+                      />
+                      <Field
+                        label="Email"
+                        name="sender.email"
+                        type="email"
+                        value={editData.sender?.email || ''}
+                        onChange={handleEditChange}
+                        placeholder="sender@example.com"
+                        required
+                      />
+                      <Field
+                        label="Phone"
+                        name="sender.phone"
+                        type="tel"
+                        value={editData.sender?.phone || ''}
+                        onChange={handleEditChange}
+                        placeholder="+1 234 567 890"
+                        required
+                      />
+                    </div>
+                  </div>
 
-                    <button
-                      type="button"
-                      onClick={() =>
-                        setShowDeleteModal(true)
-                      }
-                      className="admin-button admin-button-danger"
-                    >
-                      Delete Shipment
-                    </button>
+                  {/* RECEIVER EDIT */}
+                  <div className="admin-card admin-form-section" style={{ marginTop: '24px' }}>
+                    <div className="admin-section-heading">
+                      <div className="admin-section-icon">↓</div>
+                      <div>
+                        <h3>Receiver Information</h3>
+                        <p>Edit receiver details.</p>
+                      </div>
+                    </div>
+                    <div className="admin-form-grid">
+                      <Field
+                        label="Full Name"
+                        name="receiver.name"
+                        value={editData.receiver?.name || ''}
+                        onChange={handleEditChange}
+                        placeholder="Jane Doe"
+                        required
+                      />
+                      <Field
+                        label="Address"
+                        name="receiver.address"
+                        value={editData.receiver?.address || ''}
+                        onChange={handleEditChange}
+                        placeholder="Los Angeles, CA"
+                        required
+                      />
+                      <Field
+                        label="Email"
+                        name="receiver.email"
+                        type="email"
+                        value={editData.receiver?.email || ''}
+                        onChange={handleEditChange}
+                        placeholder="receiver@example.com"
+                        required
+                      />
+                      <Field
+                        label="Phone"
+                        name="receiver.phone"
+                        type="tel"
+                        value={editData.receiver?.phone || ''}
+                        onChange={handleEditChange}
+                        placeholder="+1 234 567 890"
+                        required
+                      />
+                    </div>
+                  </div>
 
-                    <button
-                      type="button"
-                      onClick={() =>
-                        setSelectedTracking(null)
-                      }
-                      className="admin-button admin-button-secondary"
-                    >
-                      Cancel
-                    </button>
+                  {/* PACKAGE EDIT */}
+                  <div className="admin-card admin-form-section" style={{ marginTop: '24px' }}>
+                    <div className="admin-section-heading">
+                      <div className="admin-section-icon">📦</div>
+                      <div>
+                        <h3>Package Details</h3>
+                        <p>Edit package information.</p>
+                      </div>
+                    </div>
+                    <div className="admin-form-grid">
+                      <Field
+                        label="Package Description"
+                        name="package.description"
+                        value={editData.package?.description || ''}
+                        onChange={handleEditChange}
+                        placeholder="Electronics, documents..."
+                        required
+                      />
+                      <Field
+                        label="Weight (kg)"
+                        name="package.weight"
+                        type="number"
+                        value={editData.package?.weight || ''}
+                        onChange={handleEditChange}
+                        placeholder="0.0"
+                        step="0.1"
+                        required
+                      />
+                      <div className="admin-form-group">
+                        <label className="admin-label">
+                          Dimensions (cm)
+                          <span className="admin-required">*</span>
+                        </label>
+                        <div className="admin-dimensions">
+                          <input
+                            type="number"
+                            name="dimensions.length"
+                            placeholder="Length"
+                            value={editData.package?.dimensions?.length || ''}
+                            onChange={handleEditChange}
+                            step="0.1"
+                            required
+                            className="admin-input"
+                          />
+                          <input
+                            type="number"
+                            name="dimensions.width"
+                            placeholder="Width"
+                            value={editData.package?.dimensions?.width || ''}
+                            onChange={handleEditChange}
+                            step="0.1"
+                            required
+                            className="admin-input"
+                          />
+                          <input
+                            type="number"
+                            name="dimensions.height"
+                            placeholder="Height"
+                            value={editData.package?.dimensions?.height || ''}
+                            onChange={handleEditChange}
+                            step="0.1"
+                            required
+                            className="admin-input"
+                          />
+                        </div>
+                      </div>
+                      <Field
+                        label="Declared Value ($)"
+                        name="package.value"
+                        type="number"
+                        value={editData.package?.value || ''}
+                        onChange={handleEditChange}
+                        placeholder="0.00"
+                        step="0.1"
+                        required
+                      />
+                    </div>
+                  </div>
 
-                    <button
-                      type="submit"
-                      className="admin-button admin-button-primary"
-                    >
-                      Update Shipment
-                    </button>
+                  {/* STATUS / LOCATION / EVENT */}
+                  <div className="admin-card" style={{ marginTop: '24px' }}>
+                    <div className="admin-card-header">
+                      <div>
+                        <h2 className="admin-card-title">Update Status & Location</h2>
+                        <p className="admin-card-description">
+                          Change the current status and location. This will also add a new tracking event.
+                        </p>
+                      </div>
+                    </div>
 
+                    <div className="admin-form-grid">
+                      <div className="admin-form-group">
+                        <label className="admin-label">Status</label>
+                        <select
+                          value={status}
+                          onChange={(e) => setStatus(e.target.value)}
+                          className="admin-select"
+                        >
+                          <option value="pending">Pending</option>
+                          <option value="processing">Processing</option>
+                          <option value="in-transit">In Transit</option>
+                          <option value="out-for-delivery">Out for Delivery</option>
+                          <option value="delivered">Delivered</option>
+                        </select>
+                      </div>
+
+                      <Field
+                        label="Current Location"
+                        value={location}
+                        onChange={(e) => setLocation(e.target.value)}
+                        placeholder={selectedShipment.currentLocation}
+                      />
+                    </div>
+
+                    {/* Optional event section */}
+                    <div className="admin-event-section">
+                      <button
+                        type="button"
+                        onClick={() => setShowEventSection(!showEventSection)}
+                        className="admin-event-toggle"
+                      >
+                        <div>
+                          <strong>Add Tracking Event</strong>
+                          <span>Add an optional history entry.</span>
+                        </div>
+                        <span>{showEventSection ? '−' : '+'}</span>
+                      </button>
+
+                      {showEventSection && (
+                        <div className="admin-form-grid">
+                          <div className="admin-form-group admin-form-full">
+                            <Field
+                              label="Event Description"
+                              value={description}
+                              onChange={(e) => setDescription(e.target.value)}
+                              placeholder="Package arrived at sorting facility"
+                            />
+                          </div>
+                          <Field
+                            label="Date & Time"
+                            type="datetime-local"
+                            value={eventTime}
+                            onChange={(e) => setEventTime(e.target.value)}
+                          />
+                          <Field
+                            label="Declared Value Override ($)"
+                            type="number"
+                            value={updateDeclaredValue}
+                            onChange={(e) => setUpdateDeclaredValue(e.target.value)}
+                            placeholder="Optional"
+                            step="0.1"
+                          />
+                        </div>
+                      )}
+                    </div>
+
+                    <div className="admin-actions">
+                      <button
+                        type="button"
+                        onClick={() => setShowDeleteModal(true)}
+                        className="admin-button admin-button-danger"
+                      >
+                        Delete Shipment
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setSelectedTracking(null)
+                          setEditData(null)
+                        }}
+                        className="admin-button admin-button-secondary"
+                      >
+                        Cancel
+                      </button>
+                      <button
+                        type="submit"
+                        className="admin-button admin-button-primary"
+                      >
+                        Update Shipment
+                      </button>
+                    </div>
                   </div>
 
                 </form>
