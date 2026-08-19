@@ -253,12 +253,8 @@ export default function TrackingResult() {
 
   // Use a shipment date if available.
   // Otherwise the reference design date is used.
-  const shipmentDate =
-    shipment.updatedAt ||
-    shipment.dateTime ||
-    shipment.date ||
-    null
-
+ const lastEvent = shipment.history?.[shipment.history.length - 1]
+const shipmentDate = shipment.lastUpdated || lastEvent?.date || null
   const formatDateTime = () => {
     if (!shipmentDate) {
       return '15/08/2026, 19:26'
